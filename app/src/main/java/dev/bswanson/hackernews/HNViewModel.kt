@@ -41,18 +41,24 @@ class HNViewModel : ViewModel() {
 
     suspend fun getStory(id: Long): Submission {
         return suspendCoroutine { continuation ->
-            database.getReference("v0/item/$id").get()
-                .addOnCompleteListener { task ->
-                    val snapshot = task.result
+            val listener = object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    listeners.remove(this)
                     val submission = snapshot.getValue(Submission::class.java)
                     if (submission == null) {
                         continuation.resumeWith(Result.failure(RuntimeException("Failed to deserialize Submission")))
                     } else {
                         continuation.resumeWith(Result.success(submission))
                     }
-                }.addOnFailureListener { exception ->
-                    continuation.resumeWith(Result.failure(exception))
                 }
+
+                override fun onCancelled(error: DatabaseError) {
+                    listeners.remove(this)
+                    continuation.resumeWith(Result.failure(error.toException()))
+                }
+            }
+            database.getReference("v0/item/$id").addListenerForSingleValueEvent(listener)
+            listeners.add(listener)
         }
     }
 
