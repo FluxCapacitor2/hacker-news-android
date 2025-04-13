@@ -40,26 +40,42 @@ class HNViewModel : ViewModel() {
         }).also(listeners::add)
     }
 
-    suspend fun getStory(id: Long): Submission {
+    suspend fun getStory(id: Long, refresh: Boolean = false): Submission {
         return suspendCoroutine { continuation ->
-            val listener = object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    listeners.remove(this)
-                    val submission = snapshot.getValue(Submission::class.java)
-                    if (submission == null) {
-                        continuation.resumeWith(Result.failure(RuntimeException("Failed to deserialize Submission")))
-                    } else {
-                        continuation.resumeWith(Result.success(submission))
+
+            val success = { snapshot: DataSnapshot ->
+                val submission = snapshot.getValue(Submission::class.java)
+                if (submission == null) {
+                    continuation.resumeWith(Result.failure(RuntimeException("Failed to deserialize Submission")))
+                } else {
+                    continuation.resumeWith(Result.success(submission))
+                }
+            }
+
+            val failure = { exception: Exception ->
+                continuation.resumeWith(Result.failure(exception))
+            }
+
+            val ref = database.getReference("v0/item/$id")
+
+            if (!refresh) {
+                val listener = object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        listeners.remove(this)
+                        success(snapshot)
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        listeners.remove(this)
+                        failure(error.toException())
                     }
                 }
 
-                override fun onCancelled(error: DatabaseError) {
-                    listeners.remove(this)
-                    continuation.resumeWith(Result.failure(error.toException()))
-                }
+                ref.addListenerForSingleValueEvent(listener)
+                listeners.add(listener)
+            } else {
+                ref.get().addOnSuccessListener(success).addOnFailureListener(failure)
             }
-            database.getReference("v0/item/$id").addListenerForSingleValueEvent(listener)
-            listeners.add(listener)
         }
     }
 
