@@ -26,6 +26,7 @@ class HNViewModel : ViewModel() {
     private val listeners = mutableListOf<ValueEventListener>()
 
     init {
+        database.setPersistenceEnabled(true)
         database.getReference("v0/topstories").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 @Suppress("UNCHECKED_CAST")

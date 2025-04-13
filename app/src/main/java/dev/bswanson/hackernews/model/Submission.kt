@@ -6,7 +6,7 @@ data class Submission(
     val parent: ID? = null,
     val text: String = "",
     /** Unix timestamp in seconds */
-    val time: Int = -1,
+    val time: Long = -1,
     val title: String = "",
     /** "job", "story", "comment", "poll", or "pollopt" */
     val type: String = "",
