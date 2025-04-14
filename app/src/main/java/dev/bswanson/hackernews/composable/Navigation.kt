@@ -27,5 +27,4 @@ fun Navigation() {
             CommentsList(navController, storyId)
         }
     }
-
 }

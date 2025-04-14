@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -65,75 +66,85 @@ fun StoryListItem(navController: NavController, id: ID) {
         if (!loaded) {
             Box(modifier = Modifier.height(48.dp))
         }
-    } else {
-        Column(
-            modifier = Modifier
-                .padding(vertical = 8.dp)
-                .fillMaxWidth()
-                .clickable(onClick = onClick),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(submission!!.title, style = MaterialTheme.typography.titleLarge)
-            if (submission?.url != null) {
-                val uri = submission!!.url!!.toUri()
-                if (uri.host != null) {
-                    Text(uri.host ?: "", style = MaterialTheme.typography.bodyMedium)
-                }
+        return
+    }
+
+    if (submission!!.deleted == true || submission!!.dead == true) {
+        return
+    }
+
+    Column(
+        modifier = Modifier
+            .padding(vertical = 8.dp)
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(submission!!.title, style = MaterialTheme.typography.titleLarge)
+        if (submission?.url != null) {
+            val uri = submission!!.url!!.toUri()
+            if (uri.host != null) {
+                Text(uri.host ?: "", style = MaterialTheme.typography.bodyMedium)
             }
+        }
 
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            // Left side
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Left side
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Filled.ThumbUp, "Upvotes", modifier = Modifier.size(16.dp))
-                        Text(
-                            (submission?.score ?: 0).toString(),
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        val timeText = DateUtils.getRelativeTimeSpanString(
-                            submission!!.time * 1000L,
-                            System.currentTimeMillis(),
-                            0L
-                        )
-
-                        Icon(Icons.Filled.DateRange, "Published", modifier = Modifier.size(16.dp))
-                        Text(timeText.toString(), style = MaterialTheme.typography.labelMedium)
-                    }
-                }
-
-                // Right side
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .background(Color.LightGray.copy(alpha = 0.4f), shape = RoundedCornerShape(12.dp))
-                        .clickable {
-                            navController.navigate(Story(submission!!.id))
-                        }
-                        .padding(6.dp, 4.dp)
-
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Filled.Email, "Comments", modifier = Modifier.size(16.dp))
+                    Icon(Icons.Filled.ThumbUp, "Upvotes", modifier = Modifier.size(16.dp))
                     Text(
-                        (submission?.descendants ?: 0).toString(),
+                        (submission?.score ?: 0).toString(),
                         style = MaterialTheme.typography.labelMedium
                     )
                 }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val timeText = DateUtils.getRelativeTimeSpanString(
+                        submission!!.time * 1000L,
+                        System.currentTimeMillis(),
+                        0L
+                    )
+
+                    Icon(Icons.Filled.DateRange, "Published", modifier = Modifier.size(16.dp))
+                    Text(timeText.toString(), style = MaterialTheme.typography.labelMedium)
+                }
+            }
+
+            // Right side
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .background(
+                        Color.LightGray.copy(alpha = 0.4f),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .clickable {
+                        navController.navigate(Story(submission!!.id))
+                    }
+                    .padding(6.dp, 4.dp)
+
+            ) {
+                Icon(Icons.Filled.Email, "Comments", modifier = Modifier.size(16.dp))
+                Text(
+                    (submission?.descendants ?: 0).toString(),
+                    style = MaterialTheme.typography.labelMedium
+                )
             }
         }
     }
+
+    HorizontalDivider()
 }

@@ -58,7 +58,7 @@ fun CommentsList(navController: NavController, storyId: ID) {
 
     LaunchedEffect(storyId) {
         try {
-            submission = viewModel.getSubmission(storyId)
+            submission = viewModel.getSubmission(storyId, refresh = true)
         } catch (exception: Exception) {
             // TODO error state
         }
@@ -108,13 +108,12 @@ fun CommentsList(navController: NavController, storyId: ID) {
                     Icon(Icons.Default.ThumbUp, "Points")
                     Text(submission?.score?.toString().orEmpty())
                 }
-
-                Text(submission!!.text)
             }
+
+            HtmlText(submission!!.text)
         }
         for (commentId in submission?.kids ?: listOf()) {
             item {
-                HorizontalDivider()
                 Comment(commentId)
             }
         }
@@ -123,12 +122,11 @@ fun CommentsList(navController: NavController, storyId: ID) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Comment(commentId: ID) {
+fun Comment(commentId: ID, nestingLevel: Int = 0) {
     val viewModel: HNViewModel = viewModel()
-    val ctx = LocalContext.current
     val haptics = LocalHapticFeedback.current
 
-    var collapsed by remember { mutableStateOf(false) }
+    var collapsed by remember { mutableStateOf(false) } // TODO scrolling away and back recreates this component, so `collapsed` resets
     var loaded by remember { mutableStateOf(false) }
     var submission by remember { mutableStateOf<Submission?>(null) }
 
@@ -146,8 +144,17 @@ fun Comment(commentId: ID) {
         return
     }
 
-    if (submission!!.deleted == true) {
+    if (submission?.deleted == true || submission?.dead == true) {
         return
+    }
+
+    if (nestingLevel == 0) {
+        HorizontalDivider(modifier = Modifier.padding(top = 8.dp))
+    }
+
+    if (submission!!.text.isBlank()) {
+        // This shouldn't happen
+        Text("Submission text is blank! $submission", color = Color.Red)
     }
 
     Column(modifier = Modifier.padding(top = 12.dp)) {
@@ -181,17 +188,7 @@ fun Comment(commentId: ID) {
                 Text(timeText.toString())
             }
             if (!collapsed) {
-                Text(AnnotatedString.fromHtml(submission!!.text, linkInteractionListener = { link ->
-                    when (link) {
-                        is LinkAnnotation.Clickable -> {
-                            // TODO ?
-                        }
-
-                        is LinkAnnotation.Url -> {
-                            CustomTabsIntent.Builder().build().launchUrl(ctx, link.url.toUri())
-                        }
-                    }
-                }))
+                HtmlText(submission!!.text)
             } else {
                 Text(
                     "(expand)",
@@ -214,9 +211,26 @@ fun Comment(commentId: ID) {
                     }
                     .padding(start = 16.dp)) {
                 for (commentId in submission?.kids ?: listOf()) {
-                    Comment(commentId)
+                    Comment(commentId, nestingLevel + 1)
                 }
             }
         }
     }
+}
+
+@Composable
+fun HtmlText(text: String) {
+    val ctx = LocalContext.current
+
+    Text(AnnotatedString.fromHtml(text, linkInteractionListener = { link ->
+        when (link) {
+            is LinkAnnotation.Clickable -> {
+                // TODO ?
+            }
+
+            is LinkAnnotation.Url -> {
+                CustomTabsIntent.Builder().build().launchUrl(ctx, link.url.toUri())
+            }
+        }
+    }))
 }

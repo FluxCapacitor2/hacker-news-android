@@ -21,12 +21,9 @@ fun StoryList(navController: NavController, modifier: Modifier = Modifier) {
         item {
             Text("Hacker News", style = MaterialTheme.typography.headlineLarge)
         }
-        for ((i, storyId) in (stories.value?.withIndex() ?: listOf<ID>().withIndex())) {
+        for (storyId in stories.value ?: listOf<ID>()) {
             item(key = storyId) {
                 StoryListItem(navController, storyId)
-                if (i != stories.value?.size) {
-                    HorizontalDivider()
-                }
             }
         }
     }
