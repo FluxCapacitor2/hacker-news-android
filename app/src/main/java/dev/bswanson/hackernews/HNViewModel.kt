@@ -16,6 +16,7 @@ class HNViewModel : ViewModel() {
 
     companion object {
         private const val DATABASE_URL = "https://hacker-news.firebaseio.com"
+        private var persistenceEnabled = false
     }
 
     private val database = Firebase.database(DATABASE_URL)
@@ -26,7 +27,10 @@ class HNViewModel : ViewModel() {
     private val listeners = mutableListOf<ValueEventListener>()
 
     init {
-        database.setPersistenceEnabled(true)
+        if (!persistenceEnabled) {
+            persistenceEnabled = true
+            database.setPersistenceEnabled(true)
+        }
         database.getReference("v0/topstories").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 @Suppress("UNCHECKED_CAST")
@@ -40,7 +44,7 @@ class HNViewModel : ViewModel() {
         }).also(listeners::add)
     }
 
-    suspend fun getStory(id: Long, refresh: Boolean = false): Submission {
+    suspend fun getSubmission(id: Long, refresh: Boolean = false): Submission {
         return suspendCoroutine { continuation ->
 
             val success = { snapshot: DataSnapshot ->

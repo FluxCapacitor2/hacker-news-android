@@ -33,12 +33,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import dev.bswanson.hackernews.HNViewModel
 import dev.bswanson.hackernews.model.ID
 import dev.bswanson.hackernews.model.Submission
 
 @Composable
-fun StoryListItem(id: ID) {
+fun StoryListItem(navController: NavController, id: ID) {
     val viewModel: HNViewModel = viewModel()
     var loaded by remember { mutableStateOf(false) }
     var submission by remember { mutableStateOf<Submission?>(null) }
@@ -53,7 +54,7 @@ fun StoryListItem(id: ID) {
 
     LaunchedEffect(id) {
         try {
-            submission = viewModel.getStory(id)
+            submission = viewModel.getSubmission(id)
         } catch (exception: Exception) {
             // TODO error
         }
@@ -121,7 +122,7 @@ fun StoryListItem(id: ID) {
                     modifier = Modifier
                         .background(Color.LightGray.copy(alpha = 0.4f), shape = RoundedCornerShape(12.dp))
                         .clickable {
-                            // TODO open comments
+                            navController.navigate(Story(submission!!.id))
                         }
                         .padding(6.dp, 4.dp)
 

@@ -19,5 +19,7 @@ data class Submission(
     val url: String? = null,
     val score: Int? = null,
     /** The item's parent poll if [type] == "pollopt" */
-    val poll: ID? = null
+    val poll: ID? = null,
+    val deleted: Boolean? = false,
+    val dead: Boolean? = false
 )

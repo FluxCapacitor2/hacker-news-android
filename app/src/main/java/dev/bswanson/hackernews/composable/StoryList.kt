@@ -8,11 +8,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import dev.bswanson.hackernews.HNViewModel
 import dev.bswanson.hackernews.model.ID
 
 @Composable
-fun StoryList(modifier: Modifier = Modifier) {
+fun StoryList(navController: NavController, modifier: Modifier = Modifier) {
     val viewModel: HNViewModel = viewModel()
     val stories = viewModel.topStories.observeAsState()
 
@@ -22,7 +23,7 @@ fun StoryList(modifier: Modifier = Modifier) {
         }
         for ((i, storyId) in (stories.value?.withIndex() ?: listOf<ID>().withIndex())) {
             item(key = storyId) {
-                StoryListItem(storyId)
+                StoryListItem(navController, storyId)
                 if (i != stories.value?.size) {
                     HorizontalDivider()
                 }

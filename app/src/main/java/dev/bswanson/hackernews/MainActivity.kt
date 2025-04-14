@@ -12,8 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.rememberNavController
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
+import dev.bswanson.hackernews.composable.Navigation
 import dev.bswanson.hackernews.composable.StoryList
 import dev.bswanson.hackernews.ui.theme.HackerNewsTheme
 
@@ -25,6 +27,7 @@ class MainActivity : ComponentActivity() {
             this,
             FirebaseOptions.Builder().setApplicationId(packageName).build()
         )
+
         @Suppress("SENSELESS_COMPARISON") // Firebase is lying - initializeApp can return null if the right credentials aren't provided
         if (firebaseApp == null) {
             error("Failed to initialize Firebase app")
@@ -40,7 +43,7 @@ class MainActivity : ComponentActivity() {
                             .padding(innerPadding)
                             .padding(8.dp)
                     ) {
-                        StoryList()
+                        Navigation()
                     }
                 }
             }
@@ -52,6 +55,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GreetingPreview() {
     HackerNewsTheme {
-        StoryList()
+        StoryList(rememberNavController())
     }
 }
